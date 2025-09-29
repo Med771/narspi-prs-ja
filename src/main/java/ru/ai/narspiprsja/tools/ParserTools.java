@@ -107,7 +107,7 @@ public class ParserTools {
         return news;
     }
 
-    public Optional<Page> parseArticlePage(int postId, String url) {
+    public Optional<Page> parseArticlePage(long postId, String url) {
         Optional<Document> docOpt = fetchPage(url);
         if (docOpt.isEmpty()) return Optional.empty();
 

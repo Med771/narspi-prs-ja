@@ -1,7 +1,7 @@
 package ru.ai.narspiprsja.model;
 
 public record Page(
-        int postId,
+        long postId,
         String url,
         String text
 ) {

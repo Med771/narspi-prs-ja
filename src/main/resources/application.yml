@@ -5,3 +5,4 @@ spring:
 parse:
   config:
     date: 2025-08-01
+    parts: medicin,digital,culture,obrazov,minpriroda,agro,mintrans,mintrud,sport,minfin,gkchs,minec,minust,tarif

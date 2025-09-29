@@ -5,12 +5,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ru.ai.narspiprsja.body.PageReq;
 import ru.ai.narspiprsja.body.UrlsReq;
 import ru.ai.narspiprsja.body.UrlsRes;
 import ru.ai.narspiprsja.config.RabbitConfig;
+import ru.ai.narspiprsja.model.Page;
+import ru.ai.narspiprsja.model.Site;
 import ru.ai.narspiprsja.model.Url;
+import ru.ai.narspiprsja.property.ParserProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RabbitTools {
     private final ParserTools parserTools;
+    private final ParserProperty parserProperty;
 
     private final RabbitConfig rabbitConfig;
     private final RabbitTemplate rabbitTemplate;
@@ -57,7 +64,21 @@ public class RabbitTools {
         }
     }
 
-    public void parse_urls(String part) {
+    public void pageSend(List<Page> pages) {
+        PageReq req = new PageReq(
+                UUID.randomUUID(),
+                pages
+        );
+
+        logger.info("[UUID: {}] Send pages size: {}", req.uuid(), req.pages().size());
+
+        rabbitTemplate.convertAndSend(
+                rabbitConfig.getGtwExc(),
+                rabbitConfig.getPageReqRoutingKey(),
+                req);
+    }
+
+    public void parseUrls(String part) {
         List<Url> urls = parserTools.parseNewsPage(part);
 
         UrlsReq req = new UrlsReq(
@@ -68,8 +89,26 @@ public class RabbitTools {
 
         Optional<UrlsRes> res = urlsSendAndReceive(req);
 
-        if (res.isPresent()) {
+        if (res.isEmpty() || res.get().sites().isEmpty()) {return;}
 
+        List<Page> pages = new ArrayList<>();
+
+        for (Site site: res.get().sites()) {
+            Optional<Page> page = parserTools.parseArticlePage(site.postId(), site.source());
+
+            page.ifPresent(pages::add);
+
+            if (pages.size() >= 20) {
+                pageSend(pages);
+                pages.clear();
+            }
+        }
+    }
+
+    @Scheduled(fixedDelay = 10000)
+    public void task() {
+        for (String part: parserProperty.getParts()) {
+            parseUrls(part);
         }
     }
 }
