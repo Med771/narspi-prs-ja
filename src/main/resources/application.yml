@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: narspi-prs-ja
+
+parse:
+  config:
+    date: 2025-08-01
