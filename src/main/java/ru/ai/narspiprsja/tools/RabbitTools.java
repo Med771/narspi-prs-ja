@@ -80,6 +80,7 @@ public class RabbitTools {
 
     public void parseUrls(String part) {
         List<Url> urls = parserTools.parseNewsPage(part);
+        if (urls.isEmpty()) { return; }
 
         UrlsReq req = new UrlsReq(
                 UUID.randomUUID(),
@@ -102,6 +103,10 @@ public class RabbitTools {
                 pageSend(pages);
                 pages.clear();
             }
+        }
+
+        if (!pages.isEmpty()) {
+            pageSend(pages);
         }
     }
 

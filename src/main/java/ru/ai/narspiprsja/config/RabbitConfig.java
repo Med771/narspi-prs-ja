@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class RabbitConfig {
-    private final String urlsReqQueue = "gtw.query.request.queue";
-    private final String pageReqQueue = "gtw.history.request.queue";
+    private final String urlsReqQueue = "gtw.urls.request.queue";
+    private final String pageReqQueue = "gtw.page.request.queue";
 
     private final String gtwExc = "gtw.exchange";
 
