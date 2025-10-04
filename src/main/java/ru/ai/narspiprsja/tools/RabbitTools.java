@@ -110,7 +110,7 @@ public class RabbitTools {
         }
     }
 
-    //@Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 10000)
     public void task() {
         for (String part: parserProperty.getParts()) {
             parseUrls(part);
