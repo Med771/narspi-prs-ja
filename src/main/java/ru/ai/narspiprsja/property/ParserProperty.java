@@ -12,4 +12,8 @@ import java.util.List;
 public class ParserProperty {
     private String date;
     private List<String> parts;
+
+    private String splitter;
+    private int maxTokens;
+    private int overlapTokens;
 }

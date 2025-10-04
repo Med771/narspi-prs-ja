@@ -26,6 +26,8 @@ import java.util.Optional;
 public class ParserTools {
     private final ParserProperty parserProperty;
 
+    private final OpenTools openTools;
+
     private static final Logger logger = LoggerFactory.getLogger(ParserTools.class);
 
     public Optional<Document> fetchPage(String url) {
@@ -114,30 +116,9 @@ public class ParserTools {
         Element textBlock = docOpt.get().selectFirst("div.news_text");
         if (textBlock == null) return Optional.empty();
 
-        List<String> chunks = Arrays.stream(textBlock.wholeText()
-                        .replace("\r", "\n")
-                        .split("\n\n"))
-                .map(String::strip)
-                .toList();
+        List<String> badChunks = openTools.detectSentences(textBlock.text());
+        List<String> chunks = openTools.mergeShortChunks(badChunks, parserProperty.getOverlapTokens());
 
-        StringBuilder newChunk = new StringBuilder();
-        List<String> newChunks = new ArrayList<>();
-
-        for (String chunk : chunks) {
-            if (chunk.isEmpty()) {
-                if (!newChunk.isEmpty()) {
-                    newChunks.add(newChunk.toString());
-                    newChunk.setLength(0);
-                }
-            } else {
-                newChunk.append(chunk).append("\n");
-            }
-        }
-
-        if (!newChunk.isEmpty()) {
-            newChunks.add(newChunk.toString());
-        }
-
-        return Optional.of(new Page(postId, url, String.join("\n\n", newChunks)));
+        return Optional.of(new Page(postId, url, String.join(parserProperty.getSplitter(), chunks)));
     }
 }
